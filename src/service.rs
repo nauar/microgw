@@ -11,23 +11,27 @@ pub async fn handle_request(
     req: Request<Body>,
     config: GatewayConfig,
 ) -> Result<Response<Body>, hyper::Error> {
+
+    // Get the requested host
+    let host = req.uri().host().unwrap_or(&req.headers().get("host").unwrap().to_str().unwrap()).split(":").next().unwrap();
+            
     // Get the requested path
     let path = req.uri().path();
 
     // Log that an incoming request was received
-    info!("Incoming request for path: {}", path);
+    info!("Incoming request for: host: {} and path: {}", host, path);
 
     // Check if the requested path is the health-check endpoint
-    if path == "/health-check" {
+    if host == "localhost" && path == "/health-check" {
         return health_check();
     }
 
     // Get the service configuration for the requested path
-    let service_config = match get_service_config(path.clone(), &config.services) {
+    let service_config = match get_service_config(host, path, &config.services) {
         Some(service_config) => service_config,
         None => {
             // If no service configuration exists for the requested path, return a 404 response
-            warn!("Path not found: {}", path);
+            warn!("Host and path not found: {} {}", host, path);
             return not_found();
         }
     };
@@ -67,8 +71,8 @@ pub async fn handle_request(
 }
 
 // Get the service configuration for the requested path
-fn get_service_config<'a>(path: &str, services: &'a [ServiceConfig]) -> Option<&'a ServiceConfig> {
-    services.iter().find(|c| c.path.is_match(path))
+fn get_service_config<'a>(host: &str, path: &str, services: &'a [ServiceConfig]) -> Option<&'a ServiceConfig> {
+    services.iter().find(|c| c.path.is_match(path) && c.host.is_match(host))
 }
 
 // Authorize the user by sending a request to the authorization API

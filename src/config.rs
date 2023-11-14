@@ -23,6 +23,8 @@ where
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ServiceConfig {
     #[serde(deserialize_with = "deserialize_regex", serialize_with = "serialize_regex")]
+    pub host: Regex,
+    #[serde(deserialize_with = "deserialize_regex", serialize_with = "serialize_regex")]
     pub path: Regex,
     pub target_service: String,
     pub target_port: String,

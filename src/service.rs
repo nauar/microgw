@@ -3,6 +3,7 @@ use hyper::http::request::Parts;
 use hyper::{Body, Client, Request, Response};
 use reqwest::header::{HeaderMap, AUTHORIZATION};
 use tracing::{info, warn};
+use regex::Regex;
 
 use crate::config::{GatewayConfig, ServiceConfig};
 
@@ -12,26 +13,23 @@ pub async fn handle_request(
     config: GatewayConfig,
 ) -> Result<Response<Body>, hyper::Error> {
 
-    // Get the requested host
-    let host = req.uri().host().unwrap_or(&req.headers().get("host").unwrap().to_str().unwrap()).split(":").next().unwrap();
-            
-    // Get the requested path
+    let host = req.uri().host().unwrap_or(&req.headers().get("host").unwrap().to_str().unwrap()).split(":").next().unwrap();            
     let path = req.uri().path();
+    let headers = req.headers();
 
-    // Log that an incoming request was received
-    info!("Incoming request for: host: {} and path: {}", host, path);
+    info!("Incoming request for: host: {}, path: {}, headers: {:?}", host, path, headers);
 
-    // Check if the requested path is the health-check endpoint
+    // Check if the requested host and path is the health-check endpoint
     if host == "localhost" && path == "/health-check" {
         return health_check();
     }
 
-    // Get the service configuration for the requested path
-    let service_config = match get_service_config(host, path, &config.services) {
+    // Get the service configuration for the requested host, path, and/or header
+    let service_config = match get_service_config(host, path, headers, &config.services) {
         Some(service_config) => service_config,
         None => {
             // If no service configuration exists for the requested path, return a 404 response
-            warn!("Host and path not found: {} {}", host, path);
+            warn!("Host and path not found: {} {} {:?}", host, path, headers);
             return not_found();
         }
     };
@@ -71,8 +69,18 @@ pub async fn handle_request(
 }
 
 // Get the service configuration for the requested path
-fn get_service_config<'a>(host: &str, path: &str, services: &'a [ServiceConfig]) -> Option<&'a ServiceConfig> {
-    services.iter().find(|c| c.path.is_match(path) && c.host.is_match(host))
+fn get_service_config<'a>(host: &str, path: &str, headers: &HeaderMap, services: &'a [ServiceConfig]) -> Option<&'a ServiceConfig> {
+    services.iter().find(|c| match c.path {
+        None => true,
+        Some(ref p) => p.is_match(path),
+    } && match c.host {
+        None => true,
+        Some(ref h) => h.is_match(host),
+    } && match c.header {
+        None => true,
+        Some(ref h) => headers.get(h.name.as_str()) == Some(&h.value.parse().unwrap()),
+    })
+   
 }
 
 // Authorize the user by sending a request to the authorization API

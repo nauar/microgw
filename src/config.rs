@@ -5,31 +5,45 @@ use serde::ser::{Serializer};
 use std::{fs::File, io::Read};
 use toml;
 
-fn deserialize_regex<'de, D>(deserializer: D) -> Result<Regex, D::Error>
+fn deserialize_regex<'de, D>(deserializer: D) -> Result<Option<Regex>, D::Error>
 where
     D: Deserializer<'de>,
 {
     let s = String::deserialize(deserializer)?;
-    Regex::new(&s).map_err(de::Error::custom)
+    Regex::new(&s).map_err(de::Error::custom).map(Some)
 }
 
-fn serialize_regex<S>(regex: &Regex, serializer: S) -> Result<S::Ok, S::Error>
+fn serialize_regex<S>(regex: &Option<Regex>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    serializer.serialize_str(regex.as_str())
+    match regex {
+        None => serializer.serialize_none(),
+        Some(regex) => serializer.serialize_str(regex.as_str()),
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Header {
+    pub name: String,
+    pub value: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ServiceConfig {
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(deserialize_with = "deserialize_regex", serialize_with = "serialize_regex")]
-    pub host: Regex,
+    pub host: Option<Regex>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(deserialize_with = "deserialize_regex", serialize_with = "serialize_regex")]
-    pub path: Regex,
+    pub path: Option<Regex>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub header: Option<Header>,
     pub target_service: String,
     pub target_port: String,
     pub authentication_required: Option<bool>,
 }
+
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct GatewayConfig {

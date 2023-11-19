@@ -1,0 +1,8 @@
+authorization_api_url: "https://auth.example.com/api/v1/authorization"
+services:
+  - host: "^localhost"
+    path: "^/users"
+    target_service: "http://user-service.default.svc.cluster.local"
+    target_port: "8080"
+    authentication_required: false
+

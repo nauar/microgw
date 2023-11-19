@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde::de::{self, Deserializer};
 use serde::ser::{Serializer};
 use std::{fs::File, io::Read};
-use toml;
 
 fn deserialize_regex<'de, D>(deserializer: D) -> Result<Option<Regex>, D::Error>
 where
@@ -55,5 +54,5 @@ pub fn load_config(path: &str) -> GatewayConfig {
     let mut file = File::open(path).unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
-    toml::from_str(&contents).unwrap()
+    serde_yaml::from_str(&contents).unwrap()
 }

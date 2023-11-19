@@ -42,26 +42,22 @@ The server will start on `0.0.0.0:8080`.
 
 ## Configuration
 
-The configuration for the API gateway is located in the `config.toml` file.
+The configuration for the API gateway is located in the `config.yaml` file.
 Here's an example configuration:
 
-```toml
-authorization_api_url = "https://auth.example.com/api/v1/authorization"
-
-[[services]]
-host = "^localhost"
-path = "^/users"
-target_service = "http://user-service.default.svc.cluster.local"
-target_port = "8080"
-authentication_required = false
-
-[[services]]
-host = "^localhost"
-path = "^/orders"
-target_service = "http://order-service.default.svc.cluster.local"
-target_port = "8080"
-authentication_required = true
-
+```yaml
+authorization_api_url: "https://auth.example.com/api/v1/authorization"
+services:
+  - host: "^localhost"
+    path: "^/users"
+    target_service: "http://user-service.default.svc.cluster.local"
+    target_port: "8080"
+    authentication_required: false
+  - host: "^localhost"
+    path: "^/users"
+    target_service: "http://order-service.default.svc.cluster.local"
+    target_port: "8080"
+    authentication_required: false
 ```
 
 - `authorization_api_url`: The URL for the authentication API.

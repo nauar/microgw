@@ -27,24 +27,21 @@ jobs:
     - name: Build
       run: cargo build --verbose
 
-    - name: Create and populate config.toml
+    - name: Create and populate config.yaml
       run: |
-        cat <<EOF > config.toml
-        authorization_api_url = "https://auth.example.com/api/v1/authorization"
-
-        [[services]]
-        host = "^localhost"
-        path = "^/users"
-        target_service = "http://user-service.default.svc.cluster.local"
-        target_port = "8080"
-        authentication_required = false
-
-        [[services]]
-        host = "^localhost"
-        path = "^/orders"
-        target_service = "http://order-service.default.svc.cluster.local"
-        target_port = "8080"
-        authentication_required = true
+        cat <<EOF > config.yaml
+        authorization_api_url: "https://auth.example.com/api/v1/authorization"
+          services:
+            - host: "^localhost"
+              path: "^/users"
+              target_service: "http://user-service.default.svc.cluster.local"
+              target_port: "8080"
+              authentication_required: false
+            - host: "^localhost"
+              path: "^/users"
+              target_service: "http://order-service.default.svc.cluster.local"
+              target_port: "8080"
+              authentication_required: false
         EOF
 
     - name: Run tests

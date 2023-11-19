@@ -3,7 +3,6 @@ use hyper::http::request::Parts;
 use hyper::{Body, Client, Request, Response};
 use reqwest::header::{HeaderMap, AUTHORIZATION};
 use tracing::{info, warn};
-use regex::Regex;
 
 use crate::config::{GatewayConfig, ServiceConfig};
 

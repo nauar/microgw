@@ -20,7 +20,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     // Load the configuration file
-    let config = load_config("config.toml");
+    let config = load_config("config.yaml"); 
 
     // Set the address the server will listen on
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));

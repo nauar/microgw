@@ -12,7 +12,7 @@ local environment development API Gateway.
 
 ## Features
 
-- Request forwarding based on host and path matching
+- Request forwarding based on host, path, and header matching
 - Support for regex in host and path matching
 - Optional authentication for specific services
 - Detailed logging using the tracing crate

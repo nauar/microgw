@@ -5,4 +5,8 @@ services:
     target_service: "http://user-service.default.svc.cluster.local"
     target_port: "8080"
     authentication_required: false
-
+  - host: "^localhost"
+    path: "^/users"
+    target_service: "http://order-service.default.svc.cluster.local"
+    target_port: "8080"
+    authentication_required: false

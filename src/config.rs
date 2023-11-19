@@ -1,7 +1,7 @@
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde::de::{self, Deserializer};
-use serde::ser::{Serializer};
+use serde::ser::Serializer;
 use std::{fs::File, io::Read};
 
 fn deserialize_regex<'de, D>(deserializer: D) -> Result<Option<Regex>, D::Error>

@@ -16,6 +16,7 @@ pub async fn handle_request(
     let path = req.uri().path();
     let headers = req.headers();
 
+    // Log the incoming request
     info!("Incoming request for: host: {}, path: {}, headers: {:?}", host, path, headers);
 
     // Check if the requested host and path is the health-check endpoint
@@ -30,6 +31,7 @@ pub async fn handle_request(
             // If no service configuration exists for the requested path, return a 404 response
             warn!("Host and path not found: {} {} {:?}", host, path, headers);
             return not_found();
+
         }
     };
 
@@ -67,7 +69,7 @@ pub async fn handle_request(
     }
 }
 
-// Get the service configuration for the requested path
+// Get the service configuration for the requested host, path and headers
 fn get_service_config<'a>(host: &str, path: &str, headers: &HeaderMap, services: &'a [ServiceConfig]) -> Option<&'a ServiceConfig> {
     services.iter().find(|c| match c.path {
         None => true,
@@ -79,7 +81,6 @@ fn get_service_config<'a>(host: &str, path: &str, headers: &HeaderMap, services:
         None => true,
         Some(ref h) => headers.get(h.name.as_str()) == Some(&h.value.parse().unwrap()),
     })
-   
 }
 
 // Authorize the user by sending a request to the authorization API
